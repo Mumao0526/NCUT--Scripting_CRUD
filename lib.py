@@ -1,11 +1,33 @@
 import sqlite3
 
 def DB_execute(command: str):
+    """Execute in the wanghong.db
+
+    Args:
+        command (str): _description_
+    """
     conn = sqlite3.connect('wanghong.db')
 
     # 建立 cursor 物件後再 execute
     cursor = conn.cursor()
     cursor.execute({command})
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+def DB_executeByPlaceholder(command: str, data: tuple):
+    """Execute by placeholder in the wanghong.db
+
+    Args:
+        command (str): _description_
+        data (tuple): _description_
+    """
+    conn = sqlite3.connect('wanghong.db')
+
+    # 建立 cursor 物件後再 execute
+    cursor = conn.cursor()
+    cursor.execute({command},data)
     conn.commit()
 
     cursor.close()
