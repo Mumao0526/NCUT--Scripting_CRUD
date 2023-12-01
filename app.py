@@ -28,6 +28,8 @@ def menu():
     except ValueError:
         print("=>無效的選擇")
         menu()
+    else:
+        print("=>無效的選擇")
 
 
 def main():
@@ -40,7 +42,8 @@ def main():
     while True:
         menuNumber = menu()
         if menuNumber == 1:
-            createDB()
+            if createDB():
+                print("=>資料庫已建立")
         elif menuNumber == 2:
             upToDB("members.txt")
         elif menuNumber == 3:

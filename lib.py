@@ -1,4 +1,5 @@
 import sqlite3
+import csv
 import json
 
 DB_PATH = "wanghong.db"
@@ -26,7 +27,7 @@ def DB_execute(command: str, data: tuple = None) -> bool:
 
         conn.commit()
         success = True
-        if cursor.rowcount:
+        if cursor.rowcount > 0:
             print(f"=>異動 {cursor.rowcount} 筆記錄")
     except sqlite3.Error as error:
         print(f"執行 SQL 操作時發生錯誤：{error}")
@@ -51,24 +52,49 @@ def createDB() -> bool:
 
 def upToDB(
     path: str, dbTableName: str = "members", title: list = ["mname", "msex", "mphone"]
-):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
+) -> bool:
+    """_summary_
 
+    Args:
+        path (str): _description_
+        dbTableName (str, optional): _description_. Defaults to "members".
+        title (list, optional): _description_. Defaults to ["mname", "msex", "mphone"].
+
+    Returns:
+        bool: _description_
+    """
+    # 構建 SQL 插入命令，使用 INSERT OR IGNORE 來避免重複插入
     titleStr = ",".join(title)
-    val = list()
-    for i in range(len(title)):
-        val.append("?")
-    valNum = ",".join(val)
-    command = f"INSERT INTO {dbTableName} ({titleStr}) VALUES ({valNum})"
+    placeholders = ",".join("?" * len(title))  # 創建 '?' 佔位符
+    command = (
+        f"INSERT OR IGNORE INTO {dbTableName} ({titleStr}) VALUES ({placeholders})"
+    )
+    inserted_count = 0  # 計數器，計算插入了多少筆紀錄
 
-    with open(path, "r", encoding="UTF-8") as f:
-        for line in f:
-            item = tuple(line.strip().split(","))
-            cursor.execute(command, item)
-            conn.commit()
-    cursor.close()
-    conn.close()
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # 以 CSV 格式打開文件並讀取所有行到一個列表中
+        with open(path, "r", encoding="UTF-8") as file:
+            reader = csv.reader(file)
+            for row in reader:
+                cursor.execute(command, tuple(row))
+                # 更新計數器
+                inserted_count += cursor.rowcount
+
+        conn.commit()
+        if inserted_count:
+            print(f"=>異動 {inserted_count} 筆記錄")
+        else:
+            print("=>沒有新紀錄被添加。")
+        return True
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+        return False
+    finally:
+        cursor.close()
+        conn.close()
 
 
 def show(table: str = "members", command: str = None, val: tuple = ()):
@@ -82,6 +108,7 @@ def show(table: str = "members", command: str = None, val: tuple = ()):
 
     result = cursor.fetchall()
     if result:
+        print()
         print("姓名           性別  手機")
         print("--------------------------------")
         for row in result:
@@ -104,8 +131,9 @@ def add(name: str, sex: str, phone: str) -> bool:
     """
     # 安全的佔位符號寫法
     data = (name, sex, phone)
+
     return DB_execute(
-        "INSERT INTO members (mname, msex, mphone) VALUES (?, ?, ?)", data
+        "INSERT OR IGNORE INTO members (mname, msex, mphone) VALUES (?, ?, ?)", data
     )
 
 
