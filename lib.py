@@ -57,6 +57,7 @@ def createDB() -> bool:
 def upToDB(
     path: str, dbTableName: str = "members", title: list = ["mname", "msex", "mphone"]
 ) -> bool:
+<<<<<<< HEAD
     """
     Bulk insert data from a CSV file into a database table.
 
@@ -67,6 +68,17 @@ def upToDB(
 
     Returns:
         bool: True if operation was successful, False otherwise.
+=======
+    """_summary_
+
+    Args:
+        path (str): _description_
+        dbTableName (str, optional): _description_. Defaults to "members".
+        title (list, optional): _description_. Defaults to ["mname", "msex", "mphone"].
+
+    Returns:
+        bool: _description_
+>>>>>>> 2bad1034fbc8e9082c8896d2414bff64dae84eb5
     """
     # 構建 SQL 插入命令，使用 INSERT OR IGNORE 來避免重複插入
     titleStr = ",".join(title)
