@@ -6,7 +6,8 @@ DB_PATH = "wanghong.db"
 
 
 def DB_execute(command: str, data: tuple = None) -> bool:
-    """Execute a command in the wanghong.db and return the success status.
+    """
+    Execute a command in the wanghong.db and return the success status.
 
     Args:
         command (str): SQL command to be executed.
@@ -38,12 +39,15 @@ def DB_execute(command: str, data: tuple = None) -> bool:
 
 
 def createDB() -> bool:
+    """
+    Create database and members table.
+    """
     comm = """CREATE TABLE IF NOT EXISTS "members"
             (
                 "iid"	INTEGER,
                 "mname"	TEXT NOT NULL,
                 "msex"	TEXT NOT NULL,
-                "mphone"	TEXT NOT NULL,
+                "mphone"	TEXT NOT NULL UNIQUE,
                 PRIMARY KEY("iid" AUTOINCREMENT)
             )
             """
@@ -53,15 +57,16 @@ def createDB() -> bool:
 def upToDB(
     path: str, dbTableName: str = "members", title: list = ["mname", "msex", "mphone"]
 ) -> bool:
-    """_summary_
+    """
+    Bulk insert data from a CSV file into a database table.
 
     Args:
-        path (str): _description_
-        dbTableName (str, optional): _description_. Defaults to "members".
-        title (list, optional): _description_. Defaults to ["mname", "msex", "mphone"].
+        path (str): Path to the CSV file.
+        dbTableName (str, optional): Name of the database table.
+        title (list, optional): List of column names.
 
     Returns:
-        bool: _description_
+        bool: True if operation was successful, False otherwise.
     """
     # 構建 SQL 插入命令，使用 INSERT OR IGNORE 來避免重複插入
     titleStr = ",".join(title)
@@ -98,6 +103,17 @@ def upToDB(
 
 
 def show(table: str = "members", command: str = None, val: tuple = ()):
+    """
+    Displays records from a database table or using a custom SQL command.
+
+    Args:
+        table: Table name to display records from. Defaults to "members".
+        command: Custom SQL command to execute. Defaults to None.
+        val: Values for SQL command placeholders.
+
+    Returns:
+        None
+    """
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
@@ -122,12 +138,16 @@ def show(table: str = "members", command: str = None, val: tuple = ()):
 
 
 def add(name: str, sex: str, phone: str) -> bool:
-    """Add data to members table in the wanghong.db
+    """
+    Adds a new record to the 'members' table in the database.
 
     Args:
-        name (str): _description_
-        sex (str): _description_
-        phone (str): _description_
+        name: Name of the member.
+        sex: Sex of the member.
+        phone: Phone number of the member, used as a unique identifier.
+
+    Returns:
+        True if the addition is successful, False otherwise.
     """
     # 安全的佔位符號寫法
     data = (name, sex, phone)
@@ -138,7 +158,8 @@ def add(name: str, sex: str, phone: str) -> bool:
 
 
 def search(name: str = None, sex: str = None, phone: str = None) -> list:
-    """Search data by name, sex, and/or phone.
+    """
+    Search data by name, sex, and/or phone.
 
     Args:
         name (str): Name to search for.
@@ -181,7 +202,8 @@ def search(name: str = None, sex: str = None, phone: str = None) -> list:
 
 
 def modify(name: str, sex: str, phone: str) -> bool:
-    """Modify data in the members table in the wanghong.db by name.
+    """
+    Modify data in the members table in the wanghong.db by name.
 
     Args:
         name (str): Name of the member to modify.
@@ -200,10 +222,26 @@ def modify(name: str, sex: str, phone: str) -> bool:
 
 
 def delAll() -> bool:
+    """
+    Deletes all records from the 'members' table in the database.
+
+    Returns:
+        True if the deletion is successful, False otherwise.
+    """
     return DB_execute("DELETE FROM members")
 
 
 def login(account: str, password: str) -> bool:
+    """
+    Validates user login credentials against stored credentials in 'pass.json'.
+
+    Args:
+        account: User's account name.
+        password: User's password.
+
+    Returns:
+        True if credentials are valid, False otherwise.
+    """
     with open("pass.json", "r", encoding="UTF-8") as f:
         try:
             members = json.load(f)
@@ -211,6 +249,5 @@ def login(account: str, password: str) -> bool:
                 if item.get("帳號") == account and item.get("密碼") == password:
                     return True
         except Exception as e:
-            print("Oops! I got some error!")
             print(e.__traceback__)
         return False
