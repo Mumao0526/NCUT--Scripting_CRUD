@@ -1,28 +1,19 @@
-import json
+import sqlite3
 
-account, password = "root", "135795"
-# with open('pass.json', 'r', encoding='UTF-8') as f:
-#     try:
-#         members = json.load(f)
-#         for item in members:
-#             if item.get("帳號") == account and item.get("密碼") == password:
-#                 print(True)
-#     except Exception as e:
-#         print('Oops! I got some error!')
-#         print(e.__traceback__)
-#     finally:
-#         print(False)
 
-def login(account: str, password: str) -> bool:
-    with open('pass.json', 'r', encoding='UTF-8') as f:
-        try:
-            members = json.load(f)
-            for item in members:
-                if item.get("帳號") == account and item.get("密碼") == password:
-                    return True
-        except Exception as e:
-            print('Oops! I got some error!')
-            print(e.__traceback__)
-        return False
+command = "SELECT * FROM members WHERE mname=?"
+val = '我他媽',
 
-print(login(account, password))
+conn = sqlite3.connect("wanghong.db")
+cursor = conn.cursor()
+cursor.execute(command, val)
+
+result = cursor.fetchall()
+if result:
+    print(type(result))
+    print(result)
+    for row in result:
+        print(f"{row[1]:<7}\t{row[2]:<5}{row[3]}")
+conn.commit()
+cursor.close()
+conn.close()
